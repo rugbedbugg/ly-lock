@@ -17,7 +17,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     owner = "rugbedbugg";
     repo = "ly-lock";
     tag = "v${finalAttrs.version}";
-    hash = lib.fakeHash;
+    hash = "sha256-mWlk/FBNG24nHx2J8oliGJfNP54Yff1cZVGIo/9MPQU=";
   };
 
   build-system = [ python3Packages.setuptools ];
