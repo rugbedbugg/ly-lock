@@ -223,7 +223,7 @@ class Screen:
         st.password.draw(buf, value_x, cy + 6, fg, bg)
 
         if not cfg.hide_version_string:
-            label(f"Ly version {st.version}", edge, h - 1 - edge)
+            label(f"Ly-lock version {st.version}", edge, h - 1 - edge)
 
         return st.password.cursor_x(value_x), cy + 6
 

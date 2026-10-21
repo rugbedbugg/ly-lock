@@ -4,7 +4,6 @@ import argparse
 import os
 import pwd
 import random
-import re
 import socket
 import subprocess
 import sys
@@ -74,22 +73,6 @@ def log(message):
     print(f"ly-lock: {message}", file=sys.stderr)
 
 
-def ly_version():
-    try:
-        out = subprocess.run(
-            ["ly", "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            timeout=2,
-            check=False,
-        ).stdout
-    except (OSError, subprocess.SubprocessError):
-        out = ""
-    match = re.search(r"version\s+(\S+)", out)
-    return match.group(1) if match else os.environ.get("LY_LOCK_LY_VERSION", "")
-
-
 def run_shell(command):
     if not command:
         return
@@ -135,7 +118,7 @@ class State:
         self.preview = preview
         self.user = pwd.getpwuid(os.getuid()).pw_name
         self.session = current_session(config, lang, self.user, os.environ.get("XDG_SESSION_DESKTOP"))
-        self.version = ly_version()
+        self.version = __version__
         self.tty = os.environ.get("XDG_VTNR", str(config.tty))
         self.labels_max_length = max(
             str_width(lang[k]) for k in ("login", "password", "wayland", "x11", "shell", "xinitrc", "custom")

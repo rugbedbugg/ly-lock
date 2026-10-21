@@ -24,7 +24,7 @@ makedepends=(
 )
 checkdepends=('python-pytest')
 optdepends=(
-  'ly: settings, language files and version shown on the lock screen'
+  'ly: settings and language files for the lock screen'
   'brightnessctl: F5 and F6 brightness keys'
 )
 backup=('etc/pam.d/ly-lock')

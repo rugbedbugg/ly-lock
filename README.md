@@ -2,7 +2,7 @@
 
 A Wayland lock screen that is [ly](https://codeberg.org/fairyglade/ly)'s login screen.
 
-ly-lock reads ly's own `config.ini` and draws exactly what ly would draw on your tty: the animation, the key hints, the clock, the box and the version string. Lock your session and it looks like you logged out to ly.
+ly-lock reads ly's own `config.ini` and draws exactly what ly would draw on your tty: the animation, the key hints, the clock and the box. Lock your session and it looks like you logged out to ly.
 
 ly-lock is not part of ly and is not affiliated with its authors.
 
