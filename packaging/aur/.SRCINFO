@@ -1,6 +1,6 @@
 pkgbase = ly-lock
 	pkgdesc = Wayland lock screen that looks and behaves like the ly display manager
-	pkgver = 0.1.0
+	pkgver = 0.1.1
 	pkgrel = 1
 	url = https://github.com/rugbedbugg/ly-lock
 	arch = any
@@ -18,10 +18,10 @@ pkgbase = ly-lock
 	depends = python-numpy
 	depends = python-opengl
 	depends = python-pam
-	optdepends = ly: settings, language files and version shown on the lock screen
+	optdepends = ly: settings and language files for the lock screen
 	optdepends = brightnessctl: F5 and F6 brightness keys
 	backup = etc/pam.d/ly-lock
-	source = ly-lock-0.1.0.tar.gz::https://github.com/rugbedbugg/ly-lock/archive/refs/tags/v0.1.0.tar.gz
-	sha256sums = 853d3ec1189e4d692f004ba640cb7837f97c6cb60003fca8114e4494f00bc9df
+	source = ly-lock-0.1.1.tar.gz::https://github.com/rugbedbugg/ly-lock/archive/refs/tags/v0.1.1.tar.gz
+	sha256sums = 76fe7fbc5edabe5f885d2bbc37d721b0e460c71751e30ed74db2a34c8ba60777
 
 pkgname = ly-lock
