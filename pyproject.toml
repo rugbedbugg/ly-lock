@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ly-lock"
+dynamic = ["version"]
+description = "Wayland lock screen that looks and behaves like the ly display manager"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+readme = "README.md"
+dependencies = ["PyGObject", "numpy", "python-pam", "PyOpenGL"]
+classifiers = [
+    "Environment :: Console :: Framebuffer",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Desktop Environment :: Screen Savers",
+]
+
+[project.urls]
+Homepage = "https://github.com/rugbedbugg/ly-lock"
+
+[project.scripts]
+ly-lock = "ly_lock.app:main"
+
+[tool.setuptools.packages.find]
+include = ["ly_lock*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "ly_lock.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "PLW1510", "RUF046", "RUF100"]
