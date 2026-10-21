@@ -6,6 +6,18 @@ ly-lock reads ly's own `config.ini` and draws exactly what ly would draw on your
 
 ly-lock is not part of ly and is not affiliated with its authors.
 
+## Screenshots
+
+Each background is chosen with `animation` in ly's config.
+
+| `matrix` | `doom` |
+| :---: | :---: |
+| ![matrix](docs/screenshots/matrix.png) | ![doom](docs/screenshots/doom.png) |
+| `colormix` | `gameoflife` |
+| ![colormix](docs/screenshots/colormix.png) | ![gameoflife](docs/screenshots/gameoflife.png) |
+| `dur_file` (ly's example movie) | `none`, with `bigclock = en` |
+| ![dur_file](docs/screenshots/dur_file.png) | ![none](docs/screenshots/none.png) |
+
 ## What it copies from ly
 
 - All six backgrounds: `matrix`, `doom`, `colormix`, `gameoflife`, `dur_file` and `none`, ported step by step from ly 1.4.1.
@@ -96,6 +108,12 @@ hyprctl --instance 0 'dispatch exec ly-lock'
 nix develop
 pytest
 ly-lock --preview
+```
+
+To redraw the screenshots after a visual change, pass ly's `res/example.dur` for the `dur_file` shot:
+
+```sh
+python tools/screenshots.py docs/screenshots path/to/ly/res/example.dur
 ```
 
 ## License
