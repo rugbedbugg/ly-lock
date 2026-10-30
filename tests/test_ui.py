@@ -23,12 +23,19 @@ def test_layout_matches_ly_on_a_1080p_tty():
     corners = {(95, 28): "┌", (143, 28): "┐", (95, 38): "└", (143, 38): "┘"}
     for (x, y), ch in corners.items():
         assert chr(buf.ch[y, x]) == ch
-    assert row_text(buf, 30)[98:141].rstrip() == "< host" + " " * 36 + ">"
+    assert row_text(buf, 30)[98:141] == "<" + " " * 19 + "host" + " " * 18 + ">"
     assert row_text(buf, 32)[98:141] == "wayland  < Hyprland (uwsm-managed)" + " " * 8 + ">"
     assert row_text(buf, 34)[98:107] == "login    "
     assert row_text(buf, 36)[98:106] == "password"
     assert cursor == (107, 36)
     assert row_text(buf, 66).startswith("Ly-lock version 0.2.0")
+
+
+def test_text_in_center_moves_session_and_login():
+    _, buf, _ = draw(text_in_center=True)
+    assert row_text(buf, 30)[98:141] == "<" + " " * 19 + "host" + " " * 18 + ">"
+    assert row_text(buf, 32)[107:141] == "<     Hyprland (uwsm-managed)    >"
+    assert row_text(buf, 34)[107:141] == "<              alice             >"
 
 
 def test_password_mask_and_cursor():

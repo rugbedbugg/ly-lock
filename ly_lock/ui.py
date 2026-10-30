@@ -209,16 +209,17 @@ class Screen:
         cx, cy = left + cfg.margin_box_h, top + cfg.margin_box_v
         info_w = box_w - 2 * cfg.margin_box_h
         text, mfg, mbg = st.messages[-1]
-        self.cyclable(buf, text, cx, cy, info_w, mfg, mbg)
+        # InfoLine.zig always centers, whatever text_in_center says.
+        self.cyclable(buf, text, cx, cy, info_w, mfg, mbg, center=True)
 
         value_x = cx + st.labels_max_length + 1
         field_w = box_w - 2 * cfg.margin_box_h - st.labels_max_length - 1
         session = st.session
         if session is not None:
             label(session.specifier, cx, cy + 2)
-            self.cyclable(buf, session.name, value_x, cy + 2, field_w, fg, bg, trim=True)
+            self.cyclable(buf, session.name, value_x, cy + 2, field_w, fg, bg, cfg.text_in_center, True)
         label(lang["login"], cx, cy + 4)
-        self.cyclable(buf, st.user, value_x, cy + 4, field_w, fg, bg, trim=True)
+        self.cyclable(buf, st.user, value_x, cy + 4, field_w, fg, bg, cfg.text_in_center, True)
         label(lang["password"], cx, cy + 6)
         st.password.draw(buf, value_x, cy + 6, fg, bg)
 
@@ -227,7 +228,7 @@ class Screen:
 
         return st.password.cursor_x(value_x), cy + 6
 
-    def cyclable(self, buf, item, x, y, width, fg, bg, trim=False):
+    def cyclable(self, buf, item, x, y, width, fg, bg, center=False, trim=False):
         """generic.zig CyclableLabel: "< item >" across width cells."""
         if width < 2:
             return
@@ -244,7 +245,7 @@ class Screen:
                 return
         elif length == 0:
             return
-        offset = (inner - length) // 2 if self.state.config.text_in_center and inner >= length else 0
+        offset = (inner - length) // 2 if center and inner >= length else 0
         buf.text(item, x + 2 + offset, y, fg, bg, inner)
 
     def draw_bigclock(self, buf, now, box_h):
