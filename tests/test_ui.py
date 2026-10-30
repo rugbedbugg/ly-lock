@@ -28,7 +28,7 @@ def test_layout_matches_ly_on_a_1080p_tty():
     assert row_text(buf, 34)[98:107] == "login    "
     assert row_text(buf, 36)[98:106] == "password"
     assert cursor == (107, 36)
-    assert row_text(buf, 66).startswith("Ly-lock version 0.1.1")
+    assert row_text(buf, 66).startswith("Ly-lock version 0.2.0")
 
 
 def test_password_mask_and_cursor():
