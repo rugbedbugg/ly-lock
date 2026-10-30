@@ -8,8 +8,9 @@ import numpy as np
 
 
 class Renderer:
-    def __init__(self, font, palette):
+    def __init__(self, font, palette, center=True):
         self.font = font
+        self.center = center
         # 0xFFRRGGBB: B, G, R, X bytes in memory on little-endian machines.
         self.colors = np.array(
             [0xFF000000 | (r << 16) | (g << 8) | b for r, g, b in palette],
@@ -46,6 +47,8 @@ class Renderer:
         """Draw every row of buf that changed since the last call.
 
         pixels is a (height, width) uint32 array at least the grid's size.
+        The grid sits in its center, so the leftover pixels split evenly
+        between the edges. Without center it sits in the top left like fbcon.
         cursor is the (x, y) cell showing the cursor, or None.
         Returns True if anything was drawn.
         """
@@ -71,7 +74,11 @@ class Renderer:
         uniq, inverse = np.unique(keys[y_rows], return_inverse=True)
         lut = np.fromiter((self.tile(int(k)) for k in uniq), dtype=np.int64, count=len(uniq))
         idx = lut[inverse.reshape(len(y_rows), cols)]
+        top = left = 0
+        if self.center:
+            h, w = pixels.shape
+            top, left = (h - rows * fh) // 2, (w - cols * fw) // 2
         # (rows, fh, cols, fw) view of the grid's pixels.
-        grid = pixels[: rows * fh, : cols * fw].reshape(rows, fh, cols, fw)
+        grid = pixels[top : top + rows * fh, left : left + cols * fw].reshape(rows, fh, cols, fw)
         grid[y_rows] = self.tiles[idx].transpose(0, 2, 1, 3)
         return True

@@ -87,11 +87,13 @@ Options:
 
 - `-c`, `--config FILE`: read a different ly config. The default is `/etc/ly/config.ini`.
 - `--preview`: show the lock screen in a normal window without locking. Unlocking closes the window.
+- `--align center|topleft`: place the cell grid when the screen is not a whole number of cells. `center` splits the leftover pixels between the edges. `topleft` leaves them on the right and bottom like a real tty. The default is `center`.
 
 Environment:
 
 - `LY_LOCK_FONT`: path to a PSF console font to use instead of the one in `/etc/vconsole.conf`.
 - `LY_LOCK_RENDERER=cpu`: draw on the CPU instead of with OpenGL.
+- `LY_LOCK_ALIGN`: the default for `--align`.
 
 ## If it crashes
 

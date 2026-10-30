@@ -254,19 +254,19 @@ class View:
         # Milliseconds per monitor refresh.
         self.period = 1000 / 60
         if app.use_gl:
-            self.gl = GLRenderer(app.font, app.palette)
+            self.gl = GLRenderer(app.font, app.palette, app.center)
             self.renderer = None
             self.area = GLCanvas(self)
         else:
             self.gl = None
-            self.renderer = Renderer(app.font, app.palette)
+            self.renderer = Renderer(app.font, app.palette, app.center)
             self.area = Canvas(self)
 
     def use_cpu(self):
         """Swap the GL widget for the CPU one after GL failed to start."""
         old = self.area
         self.gl = None
-        self.renderer = Renderer(self.font, self.app.palette)
+        self.renderer = Renderer(self.font, self.app.palette, self.app.center)
         self.area = Canvas(self)
         self.size = (0, 0)
         root = old.get_root()
@@ -387,6 +387,7 @@ class App:
         self.colors = ColorModel(config.full_color)
         self.font = Font(find_font())
         self.palette = read_palette()
+        self.center = args.align != "topleft"
         self.use_gl = GLRenderer is not None and os.environ.get("LY_LOCK_RENDERER") != "cpu"
         if self.use_gl:
             # A GLArea under GTK's Vulkan renderer pays for a GL to Vulkan
@@ -746,6 +747,12 @@ def main(argv=None):
         "--preview",
         action="store_true",
         help="show the lock screen in a normal window without locking",
+    )
+    parser.add_argument(
+        "--align",
+        choices=("center", "topleft"),
+        default=os.environ.get("LY_LOCK_ALIGN", "center"),
+        help="where the cell grid sits when it does not fill the screen (default: center)",
     )
     parser.add_argument("-v", "--version", action="version", version=f"ly-lock {__version__}")
     args = parser.parse_args(argv)

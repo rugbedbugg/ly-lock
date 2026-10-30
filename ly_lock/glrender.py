@@ -32,14 +32,15 @@ uniform sampler2D cells;
 uniform vec3 palette[16];
 uniform ivec2 cell_size;
 uniform ivec2 grid;
+uniform ivec2 origin;
 uniform int height_px;
 uniform int cursor_rows;
 out vec4 color;
 
 void main() {
-    ivec2 p = ivec2(int(gl_FragCoord.x), height_px - 1 - int(gl_FragCoord.y));
+    ivec2 p = ivec2(int(gl_FragCoord.x), height_px - 1 - int(gl_FragCoord.y)) - origin;
     ivec2 c = p / cell_size;
-    if (c.x >= grid.x || c.y >= grid.y) {
+    if (p.x < 0 || p.y < 0 || c.x >= grid.x || c.y >= grid.y) {
         color = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
@@ -60,8 +61,9 @@ void main() {
 class GLRenderer:
     """Draws a Buffer inside a Gtk.GLArea's render callback."""
 
-    def __init__(self, font, palette):
+    def __init__(self, font, palette, center=True):
         self.font = font
+        self.center = center
         self.palette = np.array(palette, dtype=np.float32).reshape(16, 3) / 255.0
         self.cursor_rows = 1 if font.height < 10 else 2
         self.cells = None
@@ -148,6 +150,12 @@ class GLRenderer:
         GL.glUniform2i(GL.glGetUniformLocation(p, "cell_size"), self.font.width, self.font.height)
         rows, cols = self.cells.shape[:2]
         GL.glUniform2i(GL.glGetUniformLocation(p, "grid"), cols, rows)
+        # Place the grid like the CPU renderer does.
+        top = left = 0
+        if self.center:
+            left = (width_px - cols * self.font.width) // 2
+            top = (height_px - rows * self.font.height) // 2
+        GL.glUniform2i(GL.glGetUniformLocation(p, "origin"), left, top)
         GL.glUniform1i(GL.glGetUniformLocation(p, "height_px"), height_px)
         GL.glUniform1i(GL.glGetUniformLocation(p, "cursor_rows"), self.cursor_rows)
         GL.glBindVertexArray(self.vao)
