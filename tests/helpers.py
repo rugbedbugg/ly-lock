@@ -20,7 +20,7 @@ def make_state(**overrides):
         lang=lang,
         user="alice",
         session=Session("Hyprland (uwsm-managed)", lang["wayland"]),
-        version="0.2.0",
+        version="0.2.1",
         tty="1",
         labels_max_length=labels_max,
         password=Password(field_w, config.asterisk),
