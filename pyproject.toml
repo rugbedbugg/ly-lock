@@ -1,12 +1,13 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ly-lock"
 dynamic = ["version"]
 description = "Wayland lock screen that looks and behaves like the ly display manager"
-license = { file = "LICENSE" }
+license = "WTFPL"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 readme = "README.md"
 dependencies = ["PyGObject", "numpy", "python-pam", "PyOpenGL"]
