@@ -10,7 +10,7 @@
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ly-lock";
-  version = "0.2.1";
+  version = "0.2.2";
   pyproject = true;
 
   src = fetchFromGitHub {
