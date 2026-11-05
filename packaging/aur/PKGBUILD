@@ -29,7 +29,7 @@ optdepends=(
 )
 backup=('etc/pam.d/ly-lock')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('7ab66b5b5b4351cef19e78d3784b34dd1015134fa0f8dc5cd6d6c0da40be278c')
+sha256sums=('2a73d0d330e1d7c58793d12cc6e24abe75a525969173b85d2f8fc771f3f4fcc8')
 
 build() {
   cd "$pkgname-$pkgver"
