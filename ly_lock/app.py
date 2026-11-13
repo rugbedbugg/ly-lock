@@ -4,6 +4,7 @@ import argparse
 import os
 import pwd
 import random
+import shlex
 import socket
 import subprocess
 import sys
@@ -32,7 +33,7 @@ gi.require_version("Graphene", "1.0")
 gi.require_version("Gsk", "4.0")
 from gi.repository import Gdk, GLib, Graphene, Gsk, Gtk, Gtk4SessionLock  # noqa: E402
 
-from . import __version__, animations  # noqa: E402
+from . import __version__, animations, greetd  # noqa: E402
 from .buffer import Buffer, str_width  # noqa: E402
 from .config import DEFAULT_CONFIG_PATH, expand_lang_refs, load_config, load_lang  # noqa: E402
 from .console import ColorModel, Font, find_font, read_palette  # noqa: E402
@@ -112,12 +113,14 @@ MOD_MASK = Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK | Gdk.Modif
 class State:
     """Everything the screens share: config, the password, messages."""
 
-    def __init__(self, config, lang, preview):
+    def __init__(self, config, lang, preview, user=None, desktop=None):
         self.config = config
         self.lang = lang
         self.preview = preview
-        self.user = pwd.getpwuid(os.getuid()).pw_name
-        self.session = current_session(config, lang, self.user, os.environ.get("XDG_SESSION_DESKTOP"))
+        self.user = user or pwd.getpwuid(os.getuid()).pw_name
+        self.session = current_session(
+            config, lang, self.user, desktop or os.environ.get("XDG_SESSION_DESKTOP")
+        )
         self.version = __version__
         self.tty = os.environ.get("XDG_VTNR", str(config.tty))
         self.labels_max_length = max(
@@ -383,7 +386,7 @@ class App:
         config, warnings = load_config(args.config)
         for w in warnings:
             log(w)
-        self.state = State(config, load_lang(config), args.preview)
+        self.state = State(config, load_lang(config), args.preview, args.user, args.session_desktop)
         self.colors = ColorModel(config.full_color)
         self.font = Font(find_font())
         self.palette = read_palette()
@@ -438,7 +441,12 @@ class App:
 
     def on_activate(self, _gtk):
         self.gtk.hold()
-        if self.args.preview:
+        if self.args.greeter:
+            window = Gtk.Window(application=self.gtk, title="ly-lock greeter")
+            self.add_view(window)
+            window.fullscreen()
+            window.present()
+        elif self.args.preview:
             window = Gtk.Window(application=self.gtk, title="ly-lock preview")
             window.set_default_size(1280, 720)
             self.add_view(window)
@@ -698,23 +706,50 @@ class App:
         threading.Thread(target=self.authenticate, args=(secret,), daemon=True).start()
 
     def authenticate(self, secret):
-
+        if self.args.greeter:
+            try:
+                greetd.login(self.state.user, secret, self.session_cmd(), self.session_env())
+            except greetd.GreetdError as err:
+                log(str(err))
+                GLib.idle_add(self.auth_done, False, err.key)
+                return
+            finally:
+                del secret
+            GLib.idle_add(self.auth_done, True, None)
+            return
         p = pam.pam()
         ok = p.authenticate(self.state.user, secret, service=PAM_SERVICE, resetcreds=False)
         del secret
-        GLib.idle_add(self.auth_done, ok, p.code)
+        GLib.idle_add(self.auth_done, ok, PAM_ERRORS.get(p.code, "err_pam"))
 
-    def auth_done(self, ok, code):
+    def session_cmd(self):
+        return shlex.split(self.args.session_cmd)
+
+    def session_env(self):
+        env = ["XDG_SESSION_TYPE=wayland"]
+        name = self.args.session_desktop
+        if name:
+            env.append(f"XDG_SESSION_DESKTOP={name}")
+            env.append(f"XDG_CURRENT_DESKTOP={name}")
+        return env
+
+    def auth_done(self, ok, error_key):
         st, cfg = self.state, self.state.config
         st.busy = False
         if ok:
             st.password.clear()
-            if self.lock is not None:
+            if self.args.greeter:
+                # greetd starts the session once the greeter exits.
+                if self.args.done_file:
+                    with open(self.args.done_file, "w", encoding="utf-8"):
+                        pass
+                self.quit(0)
+            elif self.lock is not None:
                 self.lock.unlock()
             else:
                 self.quit(0)
             return GLib.SOURCE_REMOVE
-        st.error(PAM_ERRORS.get(code, "err_pam"))
+        st.error(error_key)
         st.auth_fails += 1
         if cfg.clear_password:
             st.password.clear()
@@ -754,8 +789,19 @@ def main(argv=None):
         default=os.environ.get("LY_LOCK_ALIGN", "center"),
         help="where the cell grid sits when it does not fill the screen (default: center)",
     )
+    parser.add_argument(
+        "--greeter",
+        action="store_true",
+        help="log in through greetd instead of unlocking: draw fullscreen and start --session-cmd",
+    )
+    parser.add_argument("--user", help="the user to log in (default: the current user)")
+    parser.add_argument("--session-cmd", help="the command greetd starts after login (with --greeter)")
+    parser.add_argument("--session-desktop", help="the session's desktop name, such as hyprland-uwsm")
+    parser.add_argument("--done-file", help="create this file once greetd accepts the login (with --greeter)")
     parser.add_argument("-v", "--version", action="version", version=f"ly-lock {__version__}")
     args = parser.parse_args(argv)
+    if args.greeter and not (args.user and args.session_cmd):
+        parser.error("--greeter needs --user and --session-cmd")
     try:
         app = App(args)
     except (OSError, ValueError) as err:
