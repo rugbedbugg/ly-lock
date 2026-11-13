@@ -96,3 +96,28 @@ def _login(sock, user, secret, cmd, env):
     reply = receive(sock)
     if reply.get("type") != "success":
         raise GreetdError(ERROR_OTHER, reply.get("description", "greetd could not start the session"))
+
+
+def session_env(session):
+    """The XDG variables ly sets for session, a sessions.Session or None."""
+    env = ["XDG_SESSION_TYPE=wayland"]
+    if session is None:
+        return env
+    names = session.desktop_names or session.file_name
+    if names:
+        names = names.strip(";")
+        env.append(f"XDG_SESSION_DESKTOP={names.split(';')[0]}")
+        env.append(f"XDG_CURRENT_DESKTOP={names.replace(';', ':')}")
+    return env
+
+
+def mark_done(path):
+    """Create the marker a launcher looks for. True when it exists."""
+    if not path:
+        return False
+    try:
+        with open(path, "w", encoding="utf-8"):
+            pass
+    except OSError:
+        return False
+    return True

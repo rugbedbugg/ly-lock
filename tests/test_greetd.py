@@ -5,6 +5,7 @@ import threading
 import pytest
 
 from ly_lock import greetd
+from ly_lock.sessions import Session
 
 
 class FakeGreetd:
@@ -114,3 +115,38 @@ def test_message_framing_uses_native_length():
         greetd.send(a, {"type": "cancel_session"})
         body = b'{"type": "cancel_session"}'
         assert b.recv(4 + len(body)) == struct.pack("=I", len(body)) + body
+
+
+def test_session_env_follows_the_desktop_names():
+    session = Session("Hyprland", "wayland", "hyprland-uwsm", "Hyprland;")
+    assert greetd.session_env(session) == [
+        "XDG_SESSION_TYPE=wayland",
+        "XDG_SESSION_DESKTOP=Hyprland",
+        "XDG_CURRENT_DESKTOP=Hyprland",
+    ]
+
+
+def test_session_env_joins_several_names():
+    session = Session("Plasma", "wayland", "plasma", "KDE;GNOME")
+    env = greetd.session_env(session)
+    assert "XDG_SESSION_DESKTOP=KDE" in env
+    assert "XDG_CURRENT_DESKTOP=KDE:GNOME" in env
+
+
+def test_session_env_falls_back_to_the_file_name():
+    assert "XDG_SESSION_DESKTOP=sway" in greetd.session_env(Session("Sway", "wayland", "sway"))
+
+
+def test_session_env_without_a_session():
+    assert greetd.session_env(None) == ["XDG_SESSION_TYPE=wayland"]
+
+
+def test_mark_done_creates_the_file(tmp_path):
+    path = tmp_path / "done"
+    assert greetd.mark_done(str(path))
+    assert path.exists()
+
+
+def test_mark_done_survives_an_unwritable_path(tmp_path):
+    assert not greetd.mark_done(str(tmp_path / "missing" / "done"))
+    assert not greetd.mark_done(None)

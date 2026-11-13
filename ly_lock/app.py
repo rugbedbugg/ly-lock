@@ -726,12 +726,7 @@ class App:
         return shlex.split(self.args.session_cmd)
 
     def session_env(self):
-        env = ["XDG_SESSION_TYPE=wayland"]
-        name = self.args.session_desktop
-        if name:
-            env.append(f"XDG_SESSION_DESKTOP={name}")
-            env.append(f"XDG_CURRENT_DESKTOP={name}")
-        return env
+        return greetd.session_env(self.state.session)
 
     def auth_done(self, ok, error_key):
         st, cfg = self.state, self.state.config
@@ -740,9 +735,8 @@ class App:
             st.password.clear()
             if self.args.greeter:
                 # greetd starts the session once the greeter exits.
-                if self.args.done_file:
-                    with open(self.args.done_file, "w", encoding="utf-8"):
-                        pass
+                if not greetd.mark_done(self.args.done_file) and self.args.done_file:
+                    log(f"could not create {self.args.done_file}")
                 self.quit(0)
             elif self.lock is not None:
                 self.lock.unlock()
