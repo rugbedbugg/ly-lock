@@ -9,7 +9,7 @@
 
 python3Packages.buildPythonApplication {
   pname = "ly-lock";
-  version = "0.2.2";
+  version = "0.3.0";
   src = lib.cleanSource ../.;
   pyproject = true;
 

@@ -1,3 +1,3 @@
 """ly-lock: a Wayland lock screen that is ly's login screen."""
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
